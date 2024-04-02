@@ -3,23 +3,23 @@ import { loeAndmed } from "./utils";
 import Asukohad from "./Asukohad"
 import Lisa from "./Lisa";
 import Detailid from "./Detailid";
-import { useState, useEffect} from 'react'
+import { useState, useEffect } from 'react'
 
 function App() {
-	const [asukohad, setAsukohad]= useState([
-    { 
+  const [asukohad, setAsukohad] = useState([
+    {
       nimetus: "Pärnu",
       lat: 58.3917,
       long: 24.4953,
       andmed: null
     },
-    { 
+    {
       nimetus: "Tallinn",
       lat: 59.437,
       long: 24.7536,
       andmed: null
     },
-    { 
+    {
       nimetus: "Tartu",
       lat: 58.3780,
       long: 26.7290,
@@ -33,20 +33,29 @@ function App() {
 
   const muudaAktiivset = async (index) => {
     const koht = asukohad[index];
+    if (!koht) {
+      return;
+    }
     setAktiivne(index)
-    const andmed = await loeAndmed({lat: koht.lat, long: koht.long})
+    const andmed = await loeAndmed({ lat: koht.lat, long: koht.long })
     setIlmPraegu(andmed)
     console.log(andmed)
     setLisamineAvatud(false)
   }
 
-  useEffect(() => {
-    console.log('renderdus')
-    muudaAktiivset(0)
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  const kustutaAsukoht = (index) => {
+    console.log('kustutatav ' + index)
+    asukohad[index] = undefined;
+    const uus = asukohad.filter((el) => el)
+    setAsukohad(uus)
+  }
 
-  const lisaAsukoht = ({nimetus, lat, long}) => {
+  useEffect(() => {
+    console.log(asukohad.length);
+    muudaAktiivset(asukohad.length - 1);
+  }, [asukohad])
+
+  const lisaAsukoht = ({ nimetus, lat, long }) => {
     const uusAsukoht = {
       nimetus,
       lat,
@@ -57,26 +66,29 @@ function App() {
     setAsukohad([...asukohad, uusAsukoht])
   }
 
-  let paremPaan = (<Detailid koht={asukohad[aktiivne]} ilmPraegu={ilmPraegu}/>)
+  let paremPaan = (<Detailid koht={asukohad[aktiivne]} ilmPraegu={ilmPraegu} />)
   if (lisamineAvatud) {
-    paremPaan = <Lisa lisaAsukoht={lisaAsukoht}/>
+    paremPaan = <Lisa lisaAsukoht={lisaAsukoht} />
   }
 
-	return (
-		<div className="container">
-			<h1>Ilm</h1>
+  return (
+    <div className="container">
+      <h1>Ilm</h1>
       <div className="row">
         <div className="col-4">
-        <Asukohad asukohad={asukohad}  muudaAktiivset={muudaAktiivset} />
-        <button className="btn btn-link" onClick={()=>setLisamineAvatud(true)} >Lisa</button>
+          <Asukohad
+            asukohad={asukohad}
+            muudaAktiivset={muudaAktiivset}
+            kustutaAsukoht={kustutaAsukoht} />
+          <button className="btn btn-link" onClick={() => setLisamineAvatud(true)} >Lisa</button>
         </div>
         <div className="col-8">
-       {paremPaan}
+          {paremPaan}
         </div>
-			</div>
+      </div>
 
-		</div>
-	);
+    </div>
+  );
 }
 
 export default App;
